@@ -32,19 +32,21 @@
                 }
             }
             
-            var minY, maxY;
-            
+            var topOffset, maxY, bottomOffset;
+			var fixedTop = options['top'] != null && options['top'] != false ? parseFloat(options['top']) || 0 : false;
+			
             function findMinMax () {
-                minY = parseFloat(options['topOffset']) || 0; // Start with the topOffset offset
-                maxY = false; // By default, element is always floating below/equals minY
+                topOffset = parseFloat(options['topOffset']) || 0; // Start with the topOffset offset
+				maxY = options['maxY'] != null ? parseFloat(options['maxY']) || 0 : null;
+                bottomOffset = false; // By default, element is always floating below/equals topOffset
                 
                 var $el = fixedNavPlaceholder || $this;
                 
-                if (options['bottomOffset'] != null) { // Element needs to stay non-floating above the minY and below the maxY
-                    maxY = $el.offset().top + $el.outerHeight() + // Start with the bottom position of the element
+                if (options['bottomOffset'] != null) { // Element needs to stay non-floating above the topOffset and below the bottomOffset
+                    bottomOffset = $el.offset().top + $el.outerHeight() + // Start with the bottom position of the element
                             (parseFloat(options['bottomOffset']) || 0); // Add the bottomOffset
-                } else { // Element needs to stay non-floating only above the minY
-                    minY += $el.offset().top // Add the element's top position
+                } else { // Element needs to stay non-floating only above the topOffset
+                    topOffset += $el.offset().top // Add the element's top position
                             - (offsetParent.length ? offsetParent.offset().top : 0); // Subtract the offsetParent element's top
                 }
             }   
@@ -57,15 +59,19 @@
             
             $window.scroll(function() {
                 var scrollTop = $window.scrollTop(),
-                    shouldFix = scrollTop >= minY && (!maxY || scrollTop + $window.height() <= maxY),
-                    animatingClass = false;
-                    
+					windowHeight = $window.height(),
+					thisHeight = $this.height(),
+					thisOuterHeight = $this.outerHeight(),
+                    shouldFix = scrollTop >= topOffset && (!bottomOffset || scrollTop + windowHeight <= bottomOffset),
+                    animatingClass = false,
+					isAtBottom = maxY != null && scrollTop + fixedTop > document.documentElement.scrollHeight - maxY - thisOuterHeight;
+                 
                 if (shouldFix && !fixedNavPlaceholder) {
                     fixedNavPlaceholder = $('<div>')
                         .attr('class', $this.attr('class'))
                         .removeClass('fixedbar')
                         .addClass('fixed-placeholder')
-                        .height($this.height())
+                        .height(thisHeight)
                         .insertBefore($this);
                     if (fadeDuration && options['bottomOffset'] != null && scrollTop < $this.offset().top && !wasBelow) {
                         $this.removeData('fixed-fading-out').stop().hide().fadeIn({ duration: fadeDuration });
@@ -74,20 +80,26 @@
                     fixedNavPlaceholder.remove();
                     fixedNavPlaceholder = null;
                     $this.stop();
-                    if (fadeDuration && options['bottomOffset'] != null && scrollTop < minY) {
+                    if (fadeDuration && options['bottomOffset'] != null && scrollTop < topOffset) {
                         animatingClass = true;
                         $this.data('fixed-fading-out', true).fadeOut({ duration: fadeDuration, complete: function () {
                             $this.removeClass('fixedbar-enabled').removeData('fixed-fading-out').show();
+							if (fixedTop !== false) {
+								$this.css('top', '');
+							}
                         }});
                     } else {
                         $this.fadeIn({ duration: 0 }); // Reverse half-way fade outs...
                     }
                 }
                 if (!animatingClass && (!$this.data('fixed-fading-out') || shouldFix)) {
-                    $this.toggleClass('fixedbar-enabled', shouldFix);
+                    $this.toggleClass('fixedbar-enabled', shouldFix).toggleClass('fixedbar-at-bottom', shouldFix && isAtBottom);
+					if (fixedTop !== false) {
+						$this.css('top', shouldFix && !isAtBottom ? fixedTop : '');
+					}
                 }
                 
-                wasBelow = options['bottomOffset'] != null && (scrollTop + $window.height() > maxY - (parseFloat(options['bottomOffset']) || 0));
+                wasBelow = options['bottomOffset'] != null && (scrollTop + windowHeight > bottomOffset - (parseFloat(options['bottomOffset']) || 0));
             });
         });
     });
