@@ -32,12 +32,12 @@
                 }
             }
             
-            var topOffset, maxY, bottomOffset;
-			var fixedTop = options['top'] != null && options['top'] != false ? parseFloat(options['top']) || 0 : false;
+            var topOffset, bottomOffset;
+			var fixedTop = options['top'] != null && options['top'] !== false ? parseFloat(options['top']) || 0 : false;
+			var maxY = options['maxY'] != null ? parseFloat(options['maxY']) || 0 : null;
 			
             function findMinMax () {
                 topOffset = parseFloat(options['topOffset']) || 0; // Start with the topOffset offset
-				maxY = options['maxY'] != null ? parseFloat(options['maxY']) || 0 : null;
                 bottomOffset = false; // By default, element is always floating below/equals topOffset
                 
                 var $el = fixedNavPlaceholder || $this;
@@ -49,15 +49,14 @@
                     topOffset += $el.offset().top // Add the element's top position
                             - (offsetParent.length ? offsetParent.offset().top : 0); // Subtract the offsetParent element's top
                 }
-            }   
-            
-            findMinMax();
-            
-            setInterval(findMinMax, 3000); // Update range when page layout changes
+            }
                 
             var wasBelow = false; // This will tell us from which direction we were scrolling, so we know if we need to fade in
             
             $window.scroll(function() {
+			
+				findMinMax();
+				
                 var scrollTop = $window.scrollTop(),
 					windowHeight = $window.height(),
 					thisHeight = $this.height(),
