@@ -14,6 +14,11 @@
             return null;
         }
     };
+	
+    var hasComputedStyle = document.defaultView && document.defaultView.getComputedStyle;
+	var computedStyle = function (el) {
+		return hasComputedStyle ? document.defaultView.getComputedStyle(el) : el.currentStyle;
+	};
     
     $(function(){
         $('.fixedbar').each(function(index){
@@ -59,8 +64,9 @@
 				
                 var scrollTop = $window.scrollTop(),
 					windowHeight = $window.height(),
-					thisHeight = $this.height(),
-					thisOuterHeight = $this.outerHeight(),
+					thisComputedStyle = computedStyle($this[0]),
+					thisHeight = thisComputedStyle.height,
+					thisOuterHeight = $this[0].offsetHeight,
                     shouldFix = scrollTop >= topOffset && (!bottomOffset || scrollTop + windowHeight <= bottomOffset),
                     animatingClass = false,
 					isAtBottom = maxY != null && scrollTop + fixedTop > document.documentElement.scrollHeight - maxY - thisOuterHeight;
@@ -70,7 +76,7 @@
                         .attr('class', $this.attr('class'))
                         .removeClass('fixedbar')
                         .addClass('fixed-placeholder')
-                        .height(thisHeight)
+                        .css('height', thisHeight)
                         .insertBefore($this);
                     if (fadeDuration && options['bottomOffset'] != null && scrollTop < $this.offset().top && !wasBelow) {
                         $this.removeData('fixed-fading-out').stop().hide().fadeIn({ duration: fadeDuration });
