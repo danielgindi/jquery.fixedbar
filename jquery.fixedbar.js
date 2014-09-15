@@ -37,18 +37,24 @@
                 }
             }
             
+			var baseTopOffset;
+			if (typeof options['topOffset'] === 'string') {
+				baseTopOffset = $(options['topOffset']).offset().top;
+			} else {
+				baseTopOffset = parseFloat(options['topOffset']) || 0; // Start with the topOffset offset
+			}
             var topOffset, bottomOffset;
 			var fixedTop = options['top'] != null && options['top'] !== false ? parseFloat(options['top']) || 0 : false;
 			var maxY = options['maxY'] != null ? parseFloat(options['maxY']) || 0 : null;
 			
             function findMinMax () {
-                topOffset = parseFloat(options['topOffset']) || 0; // Start with the topOffset offset
+                topOffset = baseTopOffset; // Start with the topOffset offset
                 bottomOffset = false; // By default, element is always floating below/equals topOffset
                 
                 var $el = fixedNavPlaceholder || $this;
                 
                 if (options['bottomOffset'] != null) { // Element needs to stay non-floating above the topOffset and below the bottomOffset
-                    bottomOffset = $el.offset().top + $el.outerHeight() + // Start with the bottom position of the element
+                    bottomOffset = $el.offset().top + $el[0].offsetHeight + // Start with the bottom position of the element
                             (parseFloat(options['bottomOffset']) || 0); // Add the bottomOffset
                 } else { // Element needs to stay non-floating only above the topOffset
                     topOffset += $el.offset().top // Add the element's top position
