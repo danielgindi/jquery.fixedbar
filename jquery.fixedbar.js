@@ -112,6 +112,24 @@
                 
                 wasBelow = options['bottomOffset'] != null && (scrollTop + windowHeight > bottomOffset - (parseFloat(options['bottomOffset']) || 0));
             });
+            
+            var lastDocumentWidth = $(document).width();
+            $window.resize(function () {
+                var docWidth = $(document).width();
+                if (docWidth !== lastDocumentWidth) {
+                    if (fixedNavPlaceholder) {
+                        var hadClass = $this.hasClass('fixedbar-enabled');
+                        if (hadClass) {
+                            $this.removeClass('fixedbar-enabled');
+                        }
+                        fixedNavPlaceholder.css('height', computedStyle($this[0]).height);
+                        if (hadClass) {
+                            $this.addClass('fixedbar-enabled');
+                        }
+                    }
+                }
+                lastDocumentWidth = docWidth;
+            });
         });
     });
 })(jQuery);
