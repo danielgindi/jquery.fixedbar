@@ -1,5 +1,5 @@
 /*
-    Library by Daniel Cohen Gindi (danielgindi@gmail.com) 054-5655765 
+    Library by Daniel Cohen Gindi (danielgindi@gmail.com) 
     MIT License!
     Version: 2014-02-18
 */
